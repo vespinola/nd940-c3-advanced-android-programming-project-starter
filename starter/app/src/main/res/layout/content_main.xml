@@ -40,7 +40,7 @@
             />
     </RadioGroup>
 
-    <com.udacity.LoadingButton
+    <Button
         android:id="@+id/custom_button"
         android:layout_width="0dp"
         android:layout_height="60dp"
