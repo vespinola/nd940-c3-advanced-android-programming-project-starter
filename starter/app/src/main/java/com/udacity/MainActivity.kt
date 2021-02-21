@@ -7,11 +7,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import android.widget.RadioButton
 import android.widget.Toast
@@ -19,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import timber.log.Timber
 
 
 class MainActivity : AppCompatActivity() {
@@ -47,10 +49,12 @@ class MainActivity : AppCompatActivity() {
                 showToast()
                 return@setOnClickListener
             }
+
+
+            custom_button.loading()
             download()
         }
 
-        startProgressChecker()
         showToast()
     }
 
@@ -65,10 +69,10 @@ class MainActivity : AppCompatActivity() {
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            stopProgressChecker()
+            custom_button.loadingComplete()
             //TODO: NOTIFICATION
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-
-            downloadID = 0
         }
     }
 
@@ -83,37 +87,42 @@ class MainActivity : AppCompatActivity() {
 
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
 
-        if (downloadID != 0L) {
-            downloadManager.remove(downloadID)
-        }
-
         downloadID = downloadManager.enqueue(request)// enqueue puts the download request in the queue.
+
+        startProgressChecker()
     }
 
     private fun checkDownloadProgress() {
-        val query = DownloadManager.Query()
-        query.setFilterByStatus((DownloadManager.STATUS_FAILED or DownloadManager.STATUS_SUCCESSFUL).inv())
-
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
-        val cursor = downloadManager.query(query)
+        val cursor: Cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadID))
 
-        if (!cursor.moveToFirst()) {
-            cursor.close()
-            return
+        var totalBytes: Int = 0
+
+        if (cursor.moveToFirst()) {
+            val status: Int = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+
+            when (status) {
+                DownloadManager.STATUS_RUNNING -> {
+                    //get total bytes of the file
+                    totalBytes = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+                    if (totalBytes >= 0) {
+
+                        val bytesDownloadedSoFar : Int = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+
+                        val percentProgress = ((bytesDownloadedSoFar * 100L) / totalBytes)
+
+                        Timber.d("$percentProgress")
+                    }
+                }
+                DownloadManager.STATUS_SUCCESSFUL -> {
+                }
+                DownloadManager.STATUS_FAILED -> {
+                    val reason: Int = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON))
+                }
+            }
         }
 
-        do {
-            val bytes_downloaded = cursor.getInt(cursor
-                    .getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
-            val bytes_total = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
-
-            val dl_progress = (bytes_downloaded * 100L / bytes_total).toInt()
-
-            Log.d(MainActivity.javaClass.name, "progress so far: $dl_progress")
-
-        } while (cursor.moveToNext())
         cursor.close()
-
     }
 
     private fun startProgressChecker() {
@@ -132,8 +141,6 @@ class MainActivity : AppCompatActivity() {
         override fun run() {
             try {
                 checkDownloadProgress()
-                // manager reference not found. Commenting the code for compilation
-                //manager.refresh();
             } finally {
                 handler.postDelayed(this, PROGRESS_DELAY.toLong())
             }
@@ -171,7 +178,7 @@ class MainActivity : AppCompatActivity() {
         private const val RETROFIT_URL = "https://github.com/square/retrofit/archive/master.zip"
         private const val CHANNEL_ID = "channelId"
 
-        private const val PROGRESS_DELAY = 1000
+        private const val PROGRESS_DELAY = 500
     }
 
 }
