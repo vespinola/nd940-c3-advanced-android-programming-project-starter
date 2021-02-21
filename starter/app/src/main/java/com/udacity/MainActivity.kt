@@ -96,22 +96,21 @@ class MainActivity : AppCompatActivity() {
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
         val cursor: Cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadID))
 
-        var totalBytes: Int = 0
-
         if (cursor.moveToFirst()) {
-            val status: Int = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+            val totalBytes = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
 
-            when (status) {
+            when (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))) {
                 DownloadManager.STATUS_RUNNING -> {
                     //get total bytes of the file
-                    totalBytes = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
                     if (totalBytes >= 0) {
 
                         val bytesDownloadedSoFar : Int = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
 
                         val percentProgress = ((bytesDownloadedSoFar * 100L) / totalBytes)
 
-                        Timber.d("$percentProgress")
+                        custom_button.loading(percentProgress.toInt())
+
+//                        Timber.d("$percentProgress")
                     }
                 }
                 DownloadManager.STATUS_SUCCESSFUL -> {

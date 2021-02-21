@@ -1,6 +1,7 @@
 package com.udacity
 
 import android.animation.AnimatorInflater
+import android.animation.PropertyValuesHolder
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
@@ -9,11 +10,13 @@ import android.graphics.Paint
 import android.graphics.Typeface
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.core.content.withStyledAttributes
 import kotlin.properties.Delegates
 
 private const val PADDING = 8
 private const val CIRCLE_WIDTH = 30
+private const val PERCENTAGE_VALUE_HOLDER = "percentage"
 
 class LoadingButton @JvmOverloads constructor(
         context: Context,
@@ -31,6 +34,8 @@ class LoadingButton @JvmOverloads constructor(
     private var circleProgressBarColor = 0
 
     private var currentProgress = 0
+
+    private val linearProgressPaint =  Paint(Paint.ANTI_ALIAS_FLAG)
 
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
@@ -71,12 +76,6 @@ class LoadingButton @JvmOverloads constructor(
         }
 
         buttonState = ButtonState.Completed
-
-        valueAnimator.addUpdateListener {
-
-        }
-
-
     }
 
 
@@ -88,6 +87,12 @@ class LoadingButton @JvmOverloads constructor(
             val yPos = (canvas.height / 2 - (textPaint.descent() + textPaint.ascent()) / 2).toInt()
 
             canvas.drawColor(bgColor)
+
+            linearProgressPaint.color = linearProgressBarColor
+            canvas.drawRect(
+                0f, 0f,
+                (width * (currentProgress / 100)).toFloat(), height.toFloat(), linearProgressPaint
+            )
 
             //((textPaint.descent() + textPaint.ascent()) / 2) is the distance from the baseline to the center.
             textPaint.color = Color.WHITE
@@ -109,6 +114,31 @@ class LoadingButton @JvmOverloads constructor(
         setMeasuredDimension(w, h)
     }
 
+    private fun animateProgress() {
+        // 1
+        val valuesHolder = PropertyValuesHolder.ofFloat(
+            PERCENTAGE_VALUE_HOLDER,
+            0f,
+            100f
+        )
+
+        // 2
+        valueAnimator.apply {
+            setValues(valuesHolder)
+            duration = 1000
+            interpolator = AccelerateDecelerateInterpolator()
+
+            // 3
+            addUpdateListener {
+
+                // 6
+                invalidate()
+            }
+        }
+        // 7
+        valueAnimator.start()
+    }
+
     fun loadingComplete() {
         buttonState = ButtonState.Completed
         currentProgress = 0
@@ -118,7 +148,7 @@ class LoadingButton @JvmOverloads constructor(
     fun loading(progress: Int = 0) {
         buttonState = ButtonState.Loading
         currentProgress = progress
-        invalidate()
+        animateProgress()
     }
 
 }
