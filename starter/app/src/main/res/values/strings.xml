@@ -17,4 +17,8 @@
     <string name="retrofit_option">Retrofit - Type safe HTTP Client for Android and Java by Square, Inc</string>
 
     <string name="please_select">Please select the file to download</string>
+
+    <string name="notification_channel_id" translatable="false">custom_channel</string>
+    <string name="check_status">Check Status</string>
+    <string name="notification_channel_name" translatable="true">Downloads</string>
 </resources>

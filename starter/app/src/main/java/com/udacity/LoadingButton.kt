@@ -9,7 +9,7 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.core.content.withStyledAttributes
 import kotlin.properties.Delegates
 
-private const val TEXT_PADDING = 250
+private const val TEXT_PADDING = 230
 private const val OVAL_WIDTH = 30
 
 class LoadingButton @JvmOverloads constructor(
@@ -104,13 +104,7 @@ class LoadingButton @JvmOverloads constructor(
             canvas.drawText(buttonText, xPos.toFloat(), yPos.toFloat(), paint)
 
             paint.color = circleProgressBarColor
-            canvas.drawArc(
-                    ovalSpace,
-                    0f,
-                    (360 * (currentProgress / 100)).toFloat(),
-                    true,
-                    paint
-            )
+            canvas.drawArc(ovalSpace, 0f, (360 * (currentProgress / 100)).toFloat(), true, paint)
         }
 
     }
