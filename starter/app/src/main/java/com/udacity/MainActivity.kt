@@ -31,10 +31,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pendingIntent: PendingIntent
     private lateinit var action: NotificationCompat.Action
 
-    private var handler = Handler(Looper.getMainLooper())
-    private var isProgressCheckerRunning = false
-
-
     private var selectedURL = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {

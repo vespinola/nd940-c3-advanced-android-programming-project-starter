@@ -2,19 +2,15 @@ package com.udacity
 
 import android.animation.ValueAnimator
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Typeface
+import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.core.content.withStyledAttributes
 import kotlin.properties.Delegates
 
-private const val PADDING = 8
-private const val CIRCLE_WIDTH = 30
-private const val PERCENTAGE_VALUE_HOLDER = "percentage"
+private const val TEXT_PADDING = 250
+private const val OVAL_WIDTH = 30
 
 class LoadingButton @JvmOverloads constructor(
         context: Context,
@@ -24,6 +20,8 @@ class LoadingButton @JvmOverloads constructor(
 
     private var widthSize = 0
     private var heightSize = 0
+
+    private val ovalSpace = RectF()
 
     //cached attrs
     private var bgColor = 0
@@ -75,9 +73,22 @@ class LoadingButton @JvmOverloads constructor(
         buttonState = ButtonState.Completed
     }
 
+    private fun setSpace() {
+        val horizontalCenter = (width.div(2)).toFloat()
+        val verticalCenter = (height.div(2)).toFloat()
+        val ovalSize = OVAL_WIDTH
+        ovalSpace.set(
+                horizontalCenter + TEXT_PADDING.toFloat() - ovalSize,
+                verticalCenter - ovalSize,
+                horizontalCenter + TEXT_PADDING.toFloat() + ovalSize,
+                verticalCenter + ovalSize
+        )
+    }
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
+
+        setSpace()
 
         canvas?.let {
             val xPos = width / 2
@@ -91,6 +102,15 @@ class LoadingButton @JvmOverloads constructor(
 
             paint.color = Color.WHITE
             canvas.drawText(buttonText, xPos.toFloat(), yPos.toFloat(), paint)
+
+            paint.color = circleProgressBarColor
+            canvas.drawArc(
+                    ovalSpace,
+                    0f,
+                    (360 * (currentProgress / 100)).toFloat(),
+                    true,
+                    paint
+            )
         }
 
     }
