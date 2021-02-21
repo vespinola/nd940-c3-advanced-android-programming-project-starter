@@ -58,18 +58,12 @@ class MainActivity : AppCompatActivity() {
         showToast()
     }
 
-    override fun onDestroy() {
-        stopProgressChecker()
-        super.onDestroy()
-    }
-
     private fun showToast() {
         Toast.makeText(this, getString(R.string.please_select), Toast.LENGTH_LONG).show()
     }
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            stopProgressChecker()
             custom_button.loadingComplete()
             //TODO: NOTIFICATION
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
@@ -77,73 +71,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun download() {
-        val request =
-            DownloadManager.Request(Uri.parse(selectedURL))
+        val request = DownloadManager.Request(Uri.parse(selectedURL))
                 .setTitle(getString(R.string.app_name))
                 .setDescription(getString(R.string.app_description))
                 .setRequiresCharging(false)
                 .setAllowedOverMetered(true)
                 .setAllowedOverRoaming(true)
+                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "master.zip")
 
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
 
         downloadID = downloadManager.enqueue(request)// enqueue puts the download request in the queue.
-
-        startProgressChecker()
-    }
-
-    private fun checkDownloadProgress() {
-        val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
-        val cursor: Cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadID))
-
-        if (cursor.moveToFirst()) {
-            val totalBytes = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
-
-            when (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))) {
-                DownloadManager.STATUS_RUNNING -> {
-                    //get total bytes of the file
-                    if (totalBytes >= 0) {
-
-                        val bytesDownloadedSoFar : Int = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
-
-                        val percentProgress = ((bytesDownloadedSoFar * 100L) / totalBytes)
-
-                        custom_button.loading(percentProgress.toInt())
-
-//                        Timber.d("$percentProgress")
-                    }
-                }
-                DownloadManager.STATUS_SUCCESSFUL -> {
-                }
-                DownloadManager.STATUS_FAILED -> {
-                    val reason: Int = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON))
-                }
-            }
-        }
-
-        cursor.close()
-    }
-
-    private fun startProgressChecker() {
-        if (!isProgressCheckerRunning) {
-            isProgressCheckerRunning = true
-            progressChecker.run()
-        }
-    }
-
-    private fun stopProgressChecker() {
-        handler.removeCallbacks(progressChecker)
-        isProgressCheckerRunning = false
-    }
-
-    private val progressChecker: Runnable = object : Runnable {
-        override fun run() {
-            try {
-                checkDownloadProgress()
-            } finally {
-                handler.postDelayed(this, PROGRESS_DELAY.toLong())
-            }
-        }
     }
 
     fun onRadioButtonClicked(view: View) {

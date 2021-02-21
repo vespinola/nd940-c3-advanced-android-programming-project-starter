@@ -1,7 +1,5 @@
 package com.udacity
 
-import android.animation.AnimatorInflater
-import android.animation.PropertyValuesHolder
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
@@ -33,11 +31,10 @@ class LoadingButton @JvmOverloads constructor(
     private var linearProgressBarColor = 0
     private var circleProgressBarColor = 0
 
-    private var currentProgress = 0
+    @Volatile
+    private var currentProgress: Double = 0.0
 
-    private val linearProgressPaint =  Paint(Paint.ANTI_ALIAS_FLAG)
-
-    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
         textAlign = Paint.Align.CENTER
         textSize = 55.0f
@@ -45,8 +42,7 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private lateinit var buttonText: String
-
-    private val valueAnimator = ValueAnimator()
+    private lateinit var valueAnimator: ValueAnimator
 
     private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { property, old, new ->
         when(new) {
@@ -67,13 +63,14 @@ class LoadingButton @JvmOverloads constructor(
 
 
     init {
-
         context.withStyledAttributes(attrs, R.styleable.LoadingButton) {
             bgColor = getColor(R.styleable.LoadingButton_bgColor, 0)
             textColor = getColor(R.styleable.LoadingButton_textColor, 0)
             linearProgressBarColor = getColor(R.styleable.LoadingButton_linearProgressBarColor, 0)
             circleProgressBarColor = getColor(R.styleable.LoadingButton_circleProgressBarColor, 0)
         }
+
+        configureAnimator()
 
         buttonState = ButtonState.Completed
     }
@@ -83,20 +80,17 @@ class LoadingButton @JvmOverloads constructor(
         super.onDraw(canvas)
 
         canvas?.let {
-            val xPos = canvas.width / 2
-            val yPos = (canvas.height / 2 - (textPaint.descent() + textPaint.ascent()) / 2).toInt()
+            val xPos = width / 2
+            val yPos = (height / 2 - (paint.descent() + paint.ascent()) / 2).toInt()
 
-            canvas.drawColor(bgColor)
+            paint.color = bgColor
+            canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)
 
-            linearProgressPaint.color = linearProgressBarColor
-            canvas.drawRect(
-                0f, 0f,
-                (width * (currentProgress / 100)).toFloat(), height.toFloat(), linearProgressPaint
-            )
+            paint.color = linearProgressBarColor
+            canvas.drawRect(0f, 0f, (width * currentProgress / 100).toFloat(), height.toFloat(), paint)
 
-            //((textPaint.descent() + textPaint.ascent()) / 2) is the distance from the baseline to the center.
-            textPaint.color = Color.WHITE
-            canvas.drawText(buttonText, xPos.toFloat(), yPos.toFloat(), textPaint)
+            paint.color = Color.WHITE
+            canvas.drawText(buttonText, xPos.toFloat(), yPos.toFloat(), paint)
         }
 
     }
@@ -114,41 +108,44 @@ class LoadingButton @JvmOverloads constructor(
         setMeasuredDimension(w, h)
     }
 
-    private fun animateProgress() {
-        // 1
-        val valuesHolder = PropertyValuesHolder.ofFloat(
-            PERCENTAGE_VALUE_HOLDER,
-            0f,
-            100f
-        )
+    private fun configureAnimator() {
+        valueAnimator = ValueAnimator.ofFloat(0f, 100f)
 
-        // 2
         valueAnimator.apply {
-            setValues(valuesHolder)
-            duration = 1000
+            duration = 2500
             interpolator = AccelerateDecelerateInterpolator()
-
-            // 3
+            repeatMode = ValueAnimator.RESTART
+            repeatCount = ValueAnimator.INFINITE
             addUpdateListener {
-
-                // 6
+                currentProgress = (it.animatedValue as Float).toDouble()
                 invalidate()
             }
         }
-        // 7
-        valueAnimator.start()
     }
 
     fun loadingComplete() {
+        currentProgress = 0.0
+
+        valueAnimator.cancel()
         buttonState = ButtonState.Completed
-        currentProgress = 0
         invalidate()
+        requestLayout()
     }
 
     fun loading(progress: Int = 0) {
-        buttonState = ButtonState.Loading
-        currentProgress = progress
-        animateProgress()
+        currentProgress = progress.toDouble()
+    }
+
+    override fun performClick(): Boolean {
+        super.performClick()
+
+        if (buttonState == ButtonState.Completed) {
+            buttonState = ButtonState.Loading
+        }
+
+        valueAnimator.start()
+
+        return true
     }
 
 }
