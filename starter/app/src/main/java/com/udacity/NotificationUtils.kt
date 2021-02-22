@@ -4,12 +4,13 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import androidx.core.app.NotificationCompat
+
+const val ARG_DOWNLOAD_ID = "downloadid"
 
 // Notification ID.
 private val NOTIFICATION_ID = 0
-private val REQUEST_CODE = 0
-private val FLAGS = 0
 
 // TODO: Step 1.1 extension function to send messages (GIVEN)
 /**
@@ -17,9 +18,11 @@ private val FLAGS = 0
  *
  * @param context, activity context.
  */
-fun NotificationManager.sendNotification(messageBody: String, applicationContext: Context) {
+fun NotificationManager.sendNotification(messageBody: String, downloadID: Long, applicationContext: Context) {
 
     val contentIntent = Intent(applicationContext, DetailActivity::class.java)
+    contentIntent.putExtra(ARG_DOWNLOAD_ID, downloadID)
+
     val contentPendingIntent = PendingIntent.getActivity(
             applicationContext,
             NOTIFICATION_ID,

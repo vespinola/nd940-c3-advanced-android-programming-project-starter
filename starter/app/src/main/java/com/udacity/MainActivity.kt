@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var action: NotificationCompat.Action
 
     private var selectedURL = ""
+    private var fileDescription = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,17 +70,22 @@ class MainActivity : AppCompatActivity() {
 
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
 
+            if (downloadID != id) return
+
             val notificationManager = ContextCompat.getSystemService(
                     applicationContext,
                     NotificationManager::class.java
             ) as NotificationManager
 
-            notificationManager.sendNotification("The Project 3 repository is downloaded", applicationContext)
+            notificationManager.sendNotification(
+                    "The Project 3 repository is downloaded",
+                    downloadID,
+                    applicationContext
+            )
         }
     }
 
     private fun createChannel(channelId: String, channelName: String) {
-        // TODO: Step 1.6 START create a channel
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationChannel = NotificationChannel(
                     channelId,
@@ -103,11 +109,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun download() {
         val request = DownloadManager.Request(Uri.parse(selectedURL))
-                .setTitle(getString(R.string.app_name))
-                .setDescription(getString(R.string.app_description))
+                .setTitle(fileDescription)
+                .setDescription(fileDescription)
                 .setRequiresCharging(false)
                 .setAllowedOverMetered(true)
                 .setAllowedOverRoaming(true)
+                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "master.zip");
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
 
         downloadID = downloadManager.enqueue(request)// enqueue puts the download request in the queue.
@@ -123,15 +130,18 @@ class MainActivity : AppCompatActivity() {
                 R.id.radio_glide ->
                     if (checked) {
                         selectedURL = GLIDE_URL
+                        fileDescription = getString(R.string.glide_option)
                     }
                 R.id.radio_load_app ->
                     if (checked) {
                         selectedURL = UDACITY_URL
+                        fileDescription = getString(R.string.load_app_option)
                     }
 
                 R.id.radio_retrofit ->
                     if (checked) {
                         selectedURL = RETROFIT_URL
+                        fileDescription = getString(R.string.glide_option)
                     }
             }
         }

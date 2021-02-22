@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ND940C3-Project</string>
+    <string name="app_name">LoadApp</string>
     <string name="app_description">Download files from Internet</string>
     <string name="action_settings">Settings</string>
 
@@ -21,4 +21,11 @@
     <string name="notification_channel_id" translatable="false">custom_channel</string>
     <string name="check_status">Check Status</string>
     <string name="notification_channel_name" translatable="true">Downloads</string>
+
+    <string name="ok" translatable="true">OK</string>
+    <string name="file_name">File Name</string>
+    <string name="status">Status</string>
+
+    <string name="success">Success</string>
+    <string name="fail">Fail</string>
 </resources>
