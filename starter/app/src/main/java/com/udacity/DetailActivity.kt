@@ -3,6 +3,7 @@ package com.udacity
 import android.app.DownloadManager
 import android.app.NotificationManager
 import android.database.Cursor
+import android.graphics.Color
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -47,9 +48,11 @@ class DetailActivity : AppCompatActivity() {
                 }
                 DownloadManager.STATUS_FAILED -> {
                     status_value.setText(R.string.fail)
+                    status_value.setTextColor(Color.RED)
                 }
                 else -> {
                     status_value.setText(R.string.fail)
+                    status_value.setTextColor(Color.RED)
                 }
             }
 

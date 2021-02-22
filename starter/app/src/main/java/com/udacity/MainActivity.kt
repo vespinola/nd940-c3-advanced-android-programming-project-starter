@@ -114,7 +114,6 @@ class MainActivity : AppCompatActivity() {
                 .setRequiresCharging(false)
                 .setAllowedOverMetered(true)
                 .setAllowedOverRoaming(true)
-                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "master.zip");
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
 
         downloadID = downloadManager.enqueue(request)// enqueue puts the download request in the queue.
@@ -141,7 +140,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.radio_retrofit ->
                     if (checked) {
                         selectedURL = RETROFIT_URL
-                        fileDescription = getString(R.string.glide_option)
+                        fileDescription = getString(R.string.retrofit_option)
                     }
             }
         }
