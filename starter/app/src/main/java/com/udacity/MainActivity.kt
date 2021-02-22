@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             custom_button.loadingComplete()
-            //TODO: NOTIFICATION
+
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
 
             val notificationManager = ContextCompat.getSystemService(
@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
                     NotificationManager::class.java
             ) as NotificationManager
 
-            notificationManager.sendNotification("hoho", applicationContext)
+            notificationManager.sendNotification("The Project 3 repository is downloaded", applicationContext)
         }
     }
 
@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity() {
             notificationChannel.enableLights(true)
             notificationChannel.lightColor = Color.RED
             notificationChannel.enableVibration(true)
-            notificationChannel.description = "Time for breakfast"
+            notificationChannel.description = "Notification"
 
             val notificationManager = getSystemService(
                     NotificationManager::class.java
@@ -108,8 +108,6 @@ class MainActivity : AppCompatActivity() {
                 .setRequiresCharging(false)
                 .setAllowedOverMetered(true)
                 .setAllowedOverRoaming(true)
-                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "master.zip")
-
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
 
         downloadID = downloadManager.enqueue(request)// enqueue puts the download request in the queue.
@@ -144,9 +142,6 @@ class MainActivity : AppCompatActivity() {
         private const val UDACITY_URL = "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
         private const val GLIDE_URL = "https://github.com/bumptech/glide/archive/master.zip"
         private const val RETROFIT_URL = "https://github.com/square/retrofit/archive/master.zip"
-        private const val CHANNEL_ID = "channelId"
-
-        private const val PROGRESS_DELAY = 500
     }
 
 }
